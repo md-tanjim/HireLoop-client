@@ -6,6 +6,13 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { toast } from "react-toastify";
 import { FcGoogle } from "react-icons/fc";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 import {
   ArrowRight,
@@ -27,7 +34,18 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 
+
+
+
+
+
+type UserRole = "seeker" | "recruiter";
+
+
+
+
 const SignUpForm = ()=> {
+    const [role, setRole] = useState<UserRole | "">("");
   const [showPassword, setShowPassword] = useState(false);
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -53,12 +71,18 @@ const SignUpForm = ()=> {
 
     const formData = new FormData(e.currentTarget);
 
+    if (role !== "seeker" && role !== "recruiter") {
+  toast.error("Please select your account type.");
+  return;
+}
+
     const user = {
-      name: String(formData.get("name") ?? "").trim(),
-      email: String(formData.get("email") ?? "").trim(),
-      password: String(formData.get("password") ?? ""),
-      image: String(formData.get("image") ?? "").trim() || undefined,
-    };
+  name: String(formData.get("name") ?? "").trim(),
+  email: String(formData.get("email") ?? "").trim(),
+  password: String(formData.get("password") ?? ""),
+  image: String(formData.get("image") ?? "").trim() || undefined,
+  role,
+};
 
     const emailRegex = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
 
@@ -228,6 +252,58 @@ const SignUpForm = ()=> {
 
                 </div>
               </div>
+
+
+              
+{/* Account Role */}
+<div className="space-y-2">
+  <Label
+    htmlFor="role"
+    className="text-xs font-medium text-[#d5d7df]"
+  >
+    I want to join as
+  </Label>
+
+  <Select
+    value={role}
+    onValueChange={(value : UserRole) => setRole(value as UserRole)}
+  >
+    <SelectTrigger
+      id="role"
+      className="h-11 w-full border-[#292d38] bg-[#171920] text-sm text-white focus:ring-2 focus:ring-blue-500/20"
+    >
+      <SelectValue placeholder="Select your account type" />
+    </SelectTrigger>
+
+    <SelectContent className="border-[#292d38] bg-[#171920] text-white">
+      <SelectItem
+        value="seeker"
+        className="focus:bg-white/10 focus:text-white"
+      >
+        Job Seeker
+      </SelectItem>
+
+      <SelectItem
+        value="recruiter"
+        className="focus:bg-white/10 focus:text-white"
+      >
+        Recruiter
+      </SelectItem>
+
+      <SelectItem
+        value="admin"
+        disabled
+      >
+        Admin (assigned by platform)
+      </SelectItem>
+    </SelectContent>
+  </Select>
+
+  <p className="text-[11px] text-[#737989]">
+    Choose the account type that best describes you.
+  </p>
+</div>
+
 
               {/* Email */}
               <div className="space-y-2">
