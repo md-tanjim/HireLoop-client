@@ -27,7 +27,8 @@ export default function RootLayout({
       <body>
         <ThemeProvider>
           <Navbar></Navbar>
-          {children}</ThemeProvider>
+          {children}
+          </ThemeProvider>
       </body>
        <ToastContainer />
     </html>
