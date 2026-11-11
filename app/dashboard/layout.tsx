@@ -3,12 +3,12 @@ import { DashboardSidebar } from "../components/DashboardSidebar";
 
 const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
     return (
-        <div>
+        <div className="flex min-h-screen w-full mx-auto max-w-[1450px] mt-10">
             <SidebarProvider>
-                <DashboardSidebar />
+                <DashboardSidebar  />
                 <main>
                     <SidebarTrigger />
-                    <div>
+                    <div className="w-full ">
                         {children}
                     </div>
                 </main>
