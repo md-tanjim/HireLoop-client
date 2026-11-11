@@ -30,11 +30,7 @@ import {
 import { cn } from "@/lib/utils";
 import { authClient, useSession } from "@/lib/auth-client";
 
-const navLinks = [
-  { href: "/jobs", label: "Browse Jobs" },
-  { href: "/company", label: "Company" },
-  { href: "/pricing", label: "Pricing" },
-];
+
 
 const getStartedClasses =
   "h-11 rounded-lg bg-[#5b5bd6] bg-linear-to-r from-[#5b5bd6] to-[#6a5ef7] px-6 text-sm font-medium text-white shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)] hover:from-[#6a63e8] hover:to-[#7a6cff]";
@@ -46,6 +42,16 @@ export function Navbar() {
 
   const userName = session?.user.name || "User";
   const userEmail = session?.user.email || "";
+
+
+
+  const navLinks = [
+  { href: "/jobs", label: "Browse Jobs" },
+  { href: "/company", label: "Company" },
+  { href: "/pricing", label: "Pricing" },
+  { href: `/dashboard/${session?.user.role || "seeker"}`, label: "Dashboard" },
+];
+
 
   const isLoggedIn = !!session?.user;
 
