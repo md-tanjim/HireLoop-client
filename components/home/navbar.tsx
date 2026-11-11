@@ -3,7 +3,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import {
   MenuIcon,
@@ -36,6 +36,10 @@ const getStartedClasses =
   "h-11 rounded-lg bg-[#5b5bd6] bg-linear-to-r from-[#5b5bd6] to-[#6a5ef7] px-6 text-sm font-medium text-white shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)] hover:from-[#6a63e8] hover:to-[#7a6cff]";
 
 export function Navbar() {
+
+  const pathname = usePathname();
+
+  
 
   const { data: session, isPending, refetch } = useSession();
   const router = useRouter();
@@ -109,6 +113,17 @@ export function Navbar() {
       document.removeEventListener("keydown", handleEscape);
     };
   }, [accountMenuOpen]);
+
+
+// Hide the main navbar on all dashboard routes
+if (pathname.startsWith("/dashboard")) {
+  return null;
+}
+
+
+
+
+
 
   return (
     <header className="bg-[#0a0a0a] px-6 py-3">

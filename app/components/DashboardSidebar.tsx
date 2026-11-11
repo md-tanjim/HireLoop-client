@@ -49,27 +49,27 @@ const menuItemsByRole: Record<UserRole, MenuItem[]> = {
     },
     {
       name: "Jobs",
-      url: "/dashboard/jobs",
+      url: "/dashboard/seeker/jobs",
       icon: BriefcaseBusiness,
     },
     {
       name: "Saved Jobs",
-      url: "/dashboard/saved-jobs",
+      url: "/dashboard/seeker/saved-jobs",
       icon: Bookmark,
     },
     {
       name: "Applications",
-      url: "/dashboard/applications",
+      url: "/dashboard/seeker/applications",
       icon: FileText,
     },
     {
       name: "Billing",
-      url: "/dashboard/billing",
+      url: "/dashboard/seeker/billing",
       icon: WalletCards,
     },
     {
       name: "Settings",
-      url: "/dashboard/settings",
+      url: "/dashboard/seeker/settings",
       icon: Settings,
     },
   ],
@@ -82,22 +82,22 @@ const menuItemsByRole: Record<UserRole, MenuItem[]> = {
     },
     {
       name: "Add Jobs",
-      url: "/dashboard/add-jobs",
+      url: "/dashboard/recruiter/add-jobs",
       icon: PlusCircle,
     },
     {
       name: "Manage Jobs",
-      url: "/dashboard/manage-jobs",
+      url: "/dashboard/recruiter/manage-jobs",
       icon: BriefcaseBusiness,
     },
     {
       name: "Applications",
-      url: "/dashboard/applications",
+      url: "/dashboard/recruiter/applications",
       icon: FileText,
     },
     {
       name: "Settings",
-      url: "/dashboard/settings",
+      url: "/dashboard/recruiter/settings",
       icon: Settings,
     },
   ],
@@ -110,27 +110,27 @@ const menuItemsByRole: Record<UserRole, MenuItem[]> = {
     },
     {
       name: "Users",
-      url: "/dashboard/users",
+      url: "/dashboard/admin/users",
       icon: Users,
     },
     {
       name: "Companies",
-      url: "/dashboard/companies",
+      url: "/dashboard/admin/companies",
       icon: Building2,
     },
     {
       name: "Jobs",
-      url: "/dashboard/jobs",
+      url: "/dashboard/admin/jobs",
       icon: BriefcaseBusiness,
     },
     {
       name: "Payments",
-      url: "/dashboard/payments",
+      url: "/dashboard/admin/payments",
       icon: WalletCards,
     },
     {
       name: "Settings",
-      url: "/dashboard/settings",
+      url: "/dashboard/admin/settings",
       icon: Settings,
     },
   ],
@@ -170,13 +170,18 @@ export function DashboardSidebar() {
 
   const menuItems = menuItemsByRole[validRole];
 
-  const isActive = (url: string) => {
-    if (url === "/dashboard") {
-      return pathname === "/dashboard";
-    }
+  const isActive = (item: MenuItem) => {
+  // Dashboard should only be active on its exact route
+  if (item.name === "Dashboard") {
+    return pathname === item.url;
+  }
 
-    return pathname === url || pathname.startsWith(`${url}/`);
-  };
+  // Other menu items can remain active on nested routes
+  return (
+    pathname === item.url ||
+    pathname.startsWith(`${item.url}/`)
+  );
+};
 
   if (isPending) {
     return (
@@ -351,7 +356,7 @@ export function DashboardSidebar() {
 
             {menuItems.map((item) => {
               const Icon = item.icon;
-              const active = isActive(item.url);
+              const active = isActive(item);
 
               return (
                 <SidebarMenuItem key={item.name}>
