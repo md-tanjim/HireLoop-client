@@ -23,6 +23,8 @@ type AddJobResponse = {
     [key: string]: unknown;
 };
 
+
+// add job function
 export const addJobs = async (jobData: JobData) => {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "");
 
@@ -50,3 +52,34 @@ export const addJobs = async (jobData: JobData) => {
 
     return result;
 };
+
+//delete job function
+export const deleteJobById = async (jobId: string) => {
+        
+    
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "");
+    
+        if (!apiUrl) {
+          throw new Error("API URL is not configured.");
+        }
+          const res = await fetch(
+            `${apiUrl}/delete-job/${encodeURIComponent(jobId)}`,
+            {
+              method: "DELETE",
+              headers: {
+                "Content-Type": "application/json",
+              },
+            }
+          );
+    
+          const result = await res.json().catch(() => null);
+    
+          if (!res.ok) {
+            throw new Error(
+              result?.message || "Failed to delete job."
+            );
+          }
+    
+         return result;
+        
+      };

@@ -11,6 +11,7 @@ import {
   Users,
   Pencil,
   Trash2,
+  Eye,
 } from "lucide-react";
 
 
@@ -21,7 +22,9 @@ import {
   TableRow,
   TableCell,
 } from "@/components/ui/table";
-import { IJob } from "@/types.ts/job";
+import { IJob } from "@/types/job";
+import Link from "next/link";
+import { DeleteJobDialog } from "./DeleteJobDialog";
 
 
 type ManageJobsCardProps = {jobData: IJob;applicantCount: number;};
@@ -185,7 +188,7 @@ const getPostedTime = (createdAt: string) => {
 export default function ManageJobsCard({jobData,applicantCount}: ManageJobsCardProps) {
 
   const router = useRouter();
-  const [deleting, setDeleting] = useState(false);
+  
 
   const jobId = getJobId(jobData);
 
@@ -197,58 +200,58 @@ export default function ManageJobsCard({jobData,applicantCount}: ManageJobsCardP
   const status = getJobStatus(jobData.deadline);
 
   // Delete job
-  const handleDelete = async () => {
-    const confirmed = window.confirm(
-      `Are you sure you want to delete "${jobData.title}"? This action cannot be undone.`
-    );
+//   const handleDelete = async () => {
+//     const confirmed = window.confirm(
+//       `Are you sure you want to delete "${jobData.title}"? This action cannot be undone.`
+//     );
 
-    if (!confirmed) return;
+//     if (!confirmed) return;
 
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "");
+//     const apiUrl = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "");
 
-    if (!apiUrl) {
-      toast.error("API URL is not configured.");
-      return;
-    }
+//     if (!apiUrl) {
+//       toast.error("API URL is not configured.");
+//       return;
+//     }
 
-    setDeleting(true);
+//     setDeleting(true);
 
-    try {
-      const res = await fetch(
-        `${apiUrl}/delete-job/${encodeURIComponent(jobId)}`,
-        {
-          method: "DELETE",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
+//     try {
+//       const res = await fetch(
+//         `${apiUrl}/delete-job/${encodeURIComponent(jobId)}`,
+//         {
+//           method: "DELETE",
+//           headers: {
+//             "Content-Type": "application/json",
+//           },
+//         }
+//       );
 
-      const result = await res.json().catch(() => null);
+//       const result = await res.json().catch(() => null);
 
-      if (!res.ok) {
-        throw new Error(
-          result?.message || "Failed to delete job."
-        );
-      }
+//       if (!res.ok) {
+//         throw new Error(
+//           result?.message || "Failed to delete job."
+//         );
+//       }
 
-      toast.success(result?.message || "Job deleted successfully!");
+//       toast.success(result?.message || "Job deleted successfully!");
 
-      // Refresh server-rendered job listings
-      router.refresh();
+//       // Refresh server-rendered job listings
+//       router.refresh();
 
-    } catch (error) {
-      console.error("Delete job error:", error);
+//     } catch (error) {
+//       console.error("Delete job error:", error);
 
-      toast.error(
-        error instanceof Error
-          ? error.message
-          : "Something went wrong."
-      );
-    } finally {
-      setDeleting(false);
-    }
-  };
+//       toast.error(
+//         error instanceof Error
+//           ? error.message
+//           : "Something went wrong."
+//       );
+//     } finally {
+//       setDeleting(false);
+//     }
+//   };
 
   return (
     <TableRow className="border-[#25252b] transition-colors hover:bg-white/[0.025]">
@@ -369,34 +372,24 @@ export default function ManageJobsCard({jobData,applicantCount}: ManageJobsCardP
       <TableCell className="py-4">
         <div className="flex items-center justify-end gap-2">
 
-          <Button
-            type="button"
-            size="sm"
-            onClick={() =>
-              toast.info("Job update functionality is coming soon.")
-            }
-            className="h-8 gap-1.5 bg-[#5148bc]/25 px-3 text-xs text-[#bdb7ff] hover:bg-[#5148bc]/40 hover:text-white"
-          >
-            <Pencil className="size-3.5" />
-            Update
-          </Button>
+          <Link
+  href={`/dashboard/recruiter/manage-jobs/${jobId}`}
+  className="inline-flex items-center justify-center rounded-md font-medium transition-colors h-8 gap-1.5 bg-[#5148bc]/25 px-3 text-xs text-[#bdb7ff] hover:bg-[#5148bc]/40 hover:text-white"
+>
+  <Pencil className="size-3.5" />
+  Update
+</Link>
 
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            disabled={deleting}
-            onClick={handleDelete}
-            aria-label={`Delete ${jobData.title}`}
-            title="Delete job"
-            className="size-8 shrink-0 text-[#92929c] hover:bg-red-500/10 hover:text-red-400 disabled:opacity-50"
-          >
-            {deleting ? (
-              <span className="size-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-            ) : (
-              <Trash2 className="size-4" />
-            )}
-          </Button>
+<Link
+  href={`/dashboard/recruiter/manage-jobs/${jobId}/detailed`}
+  className="inline-flex items-center justify-center rounded-md font-medium transition-colors h-8 gap-1.5 bg-[#5148bc]/25 px-3 text-xs text-[#bdb7ff] hover:bg-[#5148bc]/40 hover:text-white"
+>
+  View Details
+  <Eye className="size-3.5" />
+</Link>
+
+
+          <DeleteJobDialog jobId={jobId} jobData={jobData} />
 
         </div>
       </TableCell>

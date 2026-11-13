@@ -26,63 +26,46 @@ import {
     TableCell,
 } from "@/components/ui/table";
 import ManageJobsCard from "./ManageJobsCard";
-import { IJob } from "@/types.ts/job";
+import { IJob } from "@/types/job";
+import { getRecruiterJobs } from "@/lib/api/jobs";
 
 
 // Job type based on your MongoDB document
-export type Job = {
-    _id: string | { $oid: string };
-    title: string;
-    companyName: string;
-    category: string;
-    jobType: string;
-    isRemote: boolean;
-    location: string;
-    deadline: string;
-    minSalary: number | null;
-    maxSalary: number | null;
-    frequency: string;
-    responsibilities: string;
-    qualifications: string;
-    createdAt: string;
-    createdBy: string;
-    createdByName: string;
-    createdByEmail: string;
-};
 
-async function getRecruiterJobs(email: string): Promise<Job[]> {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "");
 
-    if (!apiUrl) {
-        throw new Error("API URL is not configured.");
-    }
+// async function getRecruiterJobs(email: string): Promise<Job[]> {
+//     const apiUrl = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "");
 
-    const res = await fetch(
-        `${apiUrl}/jobs/${encodeURIComponent(email)}`,
-        {
-            method: "GET",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            cache: "no-store",
-        }
-    );
+//     if (!apiUrl) {
+//         throw new Error("API URL is not configured.");
+//     }
 
-    if (!res.ok) {
-        throw new Error("Unable to fetch job listings.");
-    }
+//     const res = await fetch(
+//         `${apiUrl}/jobs/${encodeURIComponent(email)}`,
+//         {
+//             method: "GET",
+//             headers: {
+//                 "Content-Type": "application/json",
+//             },
+//             cache: "no-store",
+//         }
+//     );
 
-    const data = await res.json();
+//     if (!res.ok) {
+//         throw new Error("Unable to fetch job listings.");
+//     }
 
-    // Supports either an array or an object containing a jobs array
-    const jobsData = Array.isArray(data) ? data : data?.jobs;
+//     const data = await res.json();
 
-    if (!Array.isArray(jobsData)) {
-        throw new Error("Invalid jobs response from server.");
-    }
+//     // Supports either an array or an object containing a jobs array
+//     const jobsData = Array.isArray(data) ? data : data?.jobs;
 
-    return jobsData as Job[];
-}
+//     if (!Array.isArray(jobsData)) {
+//         throw new Error("Invalid jobs response from server.");
+//     }
+
+//     return jobsData as Job[];
+// }
 
 const ManageJobs = async () => {
 
@@ -102,7 +85,7 @@ const ManageJobs = async () => {
     }
 
     // Fetch recruiter jobs
-    let jobs: Job[] = [];
+    let jobs: IJob[] = [];
     let fetchError = "";
 
     try {
