@@ -42,8 +42,8 @@ const SignInForm =()=> {
       : "/";
 
   const registerUrl = callbackUrl
-    ? `/register?callbackUrl=${encodeURIComponent(callbackUrl)}`
-    : "/register";
+    ? `/signup?callbackUrl=${encodeURIComponent(callbackUrl)}`
+    : "/signup";
 
   const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -77,8 +77,8 @@ const SignInForm =()=> {
       toast.success("Signed in successfully!");
 
       await refetch();
-
       window.location.href = safeCallbackUrl;
+
     } catch {
       toast.error("Something went wrong. Please try again.");
     } finally {

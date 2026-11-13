@@ -67,7 +67,7 @@ export default function JobCard({ job }: JobCardProps) {
       : `${job.experience}+ Years`;
 
   return (
-    <Link href={`/jobs/${jobId}`} className="block">
+    <Link  href={`/browse-jobs/${jobId}`} className="block">
       <Card className="border-white/10 bg-[#121318] transition-colors hover:border-primary/50 hover:bg-[#16171d]">
         <CardContent className="flex flex-col gap-4 p-4 sm:flex-row sm:items-start sm:p-5">
 
