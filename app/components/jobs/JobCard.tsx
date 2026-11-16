@@ -1,9 +1,11 @@
+"use client";
 
 import Link from "next/link";
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import SaveJobButton from "./SaveJobButton";
 
 import {
   Banknote,
@@ -11,12 +13,14 @@ import {
   BriefcaseBusiness,
   Clock3,
 } from "lucide-react";
+
 import { IJob } from "@/types/job";
-
-
 
 type JobCardProps = {
   job: IJob;
+  seekerId: string | null;
+  isSaved: boolean;
+  onSavedChange: (jobId: string, saved: boolean) => void;
 };
 
 function getJobId(job: IJob) {
@@ -58,7 +62,12 @@ function formatSalary(job: IJob) {
   return `${salary} ${frequency || ""}`.trim();
 }
 
-export default function JobCard({ job }: JobCardProps) {
+export default function JobCard({
+  job,
+  seekerId,
+  isSaved,
+  onSavedChange,
+}: JobCardProps) {
   const jobId = getJobId(job);
 
   const experience =
@@ -67,10 +76,14 @@ export default function JobCard({ job }: JobCardProps) {
       : `${job.experience}+ Years`;
 
   return (
-    <Link  href={`/browse-jobs/${jobId}`} className="block">
-      <Card className="border-white/10 bg-[#121318] transition-colors hover:border-primary/50 hover:bg-[#16171d]">
-        <CardContent className="flex flex-col gap-4 p-4 sm:flex-row sm:items-start sm:p-5">
+    <Card className="border-white/10 bg-[#121318] transition-colors hover:border-primary/50 hover:bg-[#16171d]">
+      <CardContent className="flex flex-col gap-4 p-4 sm:flex-row sm:items-start sm:p-5">
 
+        {/* Job information */}
+        <Link
+          href={`/browse-jobs/${jobId}`}
+          className="flex min-w-0 flex-1 flex-col gap-4 sm:flex-row sm:items-start"
+        >
           {/* Company initials */}
           <Avatar className="h-12 w-12 shrink-0 rounded-lg border border-white/10">
             <AvatarFallback className="rounded-lg bg-[#252536] font-semibold text-white">
@@ -78,7 +91,7 @@ export default function JobCard({ job }: JobCardProps) {
             </AvatarFallback>
           </Avatar>
 
-          {/* Job information */}
+          {/* Job details */}
           <div className="min-w-0 flex-1">
 
             <div className="flex flex-wrap items-center gap-2">
@@ -107,7 +120,7 @@ export default function JobCard({ job }: JobCardProps) {
               </span>
             </div>
 
-            {/* Job details */}
+            {/* Job information badges */}
             <div className="mt-4 flex flex-wrap gap-2">
 
               <Badge
@@ -143,9 +156,19 @@ export default function JobCard({ job }: JobCardProps) {
 
             </div>
           </div>
+        </Link>
 
-        </CardContent>
-      </Card>
-    </Link>
+        {/* Save button: available only to logged-in seekers */}
+        {seekerId && (
+          <SaveJobButton
+            seekerId={seekerId}
+            jobId={jobId}
+            initialSaved={isSaved}
+            onSavedChange={onSavedChange}
+          />
+        )}
+
+      </CardContent>
+    </Card>
   );
 }

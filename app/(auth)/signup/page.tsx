@@ -39,13 +39,13 @@ import { Separator } from "@/components/ui/separator";
 
 
 
-type UserRole = "seeker" | "recruiter";
+type UserAccountType = "seeker" | "recruiter";
 
 
 
 
 const SignUpForm = ()=> {
-    const [role, setRole] = useState<UserRole | "">("");
+    const [accountType, setAccountType] = useState<UserAccountType | "">("");
   const [showPassword, setShowPassword] = useState(false);
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -66,12 +66,16 @@ const SignUpForm = ()=> {
     ? `/signin?callbackUrl=${encodeURIComponent(callbackUrl)}`
     : "/signin";
 
+
+    //handling email pass signup
   const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     const formData = new FormData(e.currentTarget);
 
-    if (role !== "seeker" && role !== "recruiter") {
+
+    //-------------------↓---security checks--------↓------------------------------//
+    if (accountType !== "seeker" && accountType !== "recruiter") {
   toast.error("Please select your account type.");
   return;
 }
@@ -81,7 +85,9 @@ const SignUpForm = ()=> {
   email: String(formData.get("email") ?? "").trim(),
   password: String(formData.get("password") ?? ""),
   image: String(formData.get("image") ?? "").trim() || undefined,
-  role,
+  accountType,
+
+
 };
 
     const emailRegex = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
@@ -125,9 +131,13 @@ const SignUpForm = ()=> {
       toast.error("Please agree to the Terms of Service and Privacy Policy.");
       return;
     }
+    //----------^^^^------------security checks--------^^^^------------------------------//
+
 
     setLoading(true);
 
+
+    //email pass signup
     try {
       const { data, error } = await authClient.signUp.email(user);
 
@@ -255,21 +265,21 @@ const SignUpForm = ()=> {
 
 
               
-{/* Account Role */}
+{/* Account accountType */}
 <div className="space-y-2">
   <Label
-    htmlFor="role"
+    htmlFor="accountType"
     className="text-xs font-medium text-[#d5d7df]"
   >
     I want to join as
   </Label>
 
   <Select
-    value={role}
-    onValueChange={(value : UserRole) => setRole(value as UserRole)}
+    value={accountType}
+    onValueChange={(value : UserAccountType) => setAccountType(value as UserAccountType)}
   >
     <SelectTrigger
-      id="role"
+      id="accountType"
       className="h-11 w-full border-[#292d38] bg-[#171920] text-sm text-white focus:ring-2 focus:ring-blue-500/20"
     >
       <SelectValue placeholder="Select your account type" />

@@ -4,7 +4,7 @@
 
 
 
-
+//get recruiter jobs by email
 export const getRecruiterJobs = async (email: string): Promise<IJob[]> => {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "");
 
@@ -20,6 +20,10 @@ export const getRecruiterJobs = async (email: string): Promise<IJob[]> => {
                 "Content-Type": "application/json",
             },
             cache: "no-store",
+            // next: {
+            //     tags: ['recruiter-jobs'], // Used to refresh data when a job is added/deleted
+            //     revalidate: 60 // Cache for 1 hour (or omit if using revalidateTag)
+            // },
         }
     );
 
@@ -59,6 +63,8 @@ export const getRecruiterJobs = async (email: string): Promise<IJob[]> => {
 import "server-only";
 import { IJob, JobsResponse } from "@/types/job";
 
+
+//get all jobs 
 export async function getAllJobs(params: URLSearchParams): Promise<JobsResponse> {
 
     const API_URL = process.env.NEXT_PUBLIC_API_URL?.replace(/\/+$/, "");
@@ -85,3 +91,6 @@ export async function getAllJobs(params: URLSearchParams): Promise<JobsResponse>
 
     return data as JobsResponse;
 }
+
+
+

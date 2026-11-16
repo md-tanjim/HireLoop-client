@@ -3,116 +3,133 @@
 import { getAllJobs } from "@/lib/api/jobs";
 import { JobsResponse } from "@/types/job";
 import BrowseJobsClient from "./BrowseJobsClient";
+import { GetSessionServer } from "@/lib/api/getSession";
 
 
 type JobsPageProps = {
-  searchParams: Promise<{[key: string]: string | string[] | undefined;}>;
+    searchParams: Promise<{ [key: string]: string | string[] | undefined; }>;
 };
 
 const JOBS_PER_PAGE = 8;
 
 const validSortOptions = [
-  "recent",
-  "oldest",
-  "salary-high",
-  "salary-low",
+    "recent",
+    "oldest",
+    "salary-high",
+    "salary-low",
 ] as const;
 
 //main component func
-export default async function JobsPage({searchParams}: JobsPageProps) {
-  
+export default async function JobsPage({ searchParams }: JobsPageProps) {
+
+
+
+
+
+
     const search = await searchParams;
+    const params = new URLSearchParams();
 
-  const params = new URLSearchParams();
+    const userSession = await GetSessionServer();
 
-  // These parameters can have multiple values.
-  const multiValueKeys = [
-    "jobType",
-    "category",
-    "isRemote",
-    "experience",
-  ];
+const seekerId =
+  userSession?.user.accountType === "seeker"
+    ? userSession.user.id
+    : null;
 
-  // Preserve all selected values.
-  for (const key of multiValueKeys) {
-    const value = search[key];
 
-    if (Array.isArray(value)) {
-      value.forEach((item) => params.append(key, item));
-    } else if (typeof value === "string") {
-      params.append(key, value);
+
+
+
+    // These parameters can have multiple values.
+    const multiValueKeys = [
+        "jobType",
+        "category",
+        "isRemote",
+        "experience",
+    ];
+
+    // Preserve all selected values.
+    for (const key of multiValueKeys) {
+        const value = search[key];
+
+        if (Array.isArray(value)) {
+            value.forEach((item) => params.append(key, item));
+        } else if (typeof value === "string") {
+            params.append(key, value);
+        }
     }
-  }
 
-  // These parameters should have only one value.
-  const getSingleValue = (key: string) => {
-    const value = search[key];
+    // These parameters should have only one value.
+    const getSingleValue = (key: string) => {
+        const value = search[key];
 
-    if (Array.isArray(value)) {
-      return value[0];
+        if (Array.isArray(value)) {
+            return value[0];
+        }
+
+        return value;
+    };
+
+    const searchKeyword = getSingleValue("search")?.trim();
+    const location = getSingleValue("location")?.trim();
+
+    if (searchKeyword) {
+        params.set("search", searchKeyword);
     }
 
-    return value;
-  };
+    if (location) {
+        params.set("location", location);
+    }
 
-  const searchKeyword = getSingleValue("search")?.trim();
-  const location = getSingleValue("location")?.trim();
+    // Validate the page number.
+    const requestedPage = Number(getSingleValue("page") ?? "1");
 
-  if (searchKeyword) {
-    params.set("search", searchKeyword);
-  }
+    const page =
+        Number.isSafeInteger(requestedPage) && requestedPage > 0
+            ? requestedPage
+            : 1;
 
-  if (location) {
-    params.set("location", location);
-  }
+    // Validate the sorting option.
+    const requestedSort = getSingleValue("sort");
 
-  // Validate the page number.
-  const requestedPage = Number(getSingleValue("page") ?? "1");
+    const sort =
+        validSortOptions.includes(requestedSort as (typeof validSortOptions)[number])
+            ? requestedSort!
+            : "recent";
 
-  const page =
-    Number.isSafeInteger(requestedPage) && requestedPage > 0
-      ? requestedPage
-      : 1;
+    // Pagination settings.
+    params.set("page", String(page));
+    params.set("limit", String(JOBS_PER_PAGE));
+    params.set("sort", sort);
 
-  // Validate the sorting option.
-  const requestedSort = getSingleValue("sort");
+    // Fetch initial jobs on the server.
+    const emptyResponse: JobsResponse = {
+        jobs: [],
+        totalJobs: 0,
+        currentPage: page,
+        totalPages: 0,
+    };
 
-  const sort = 
-  validSortOptions.includes(requestedSort as (typeof validSortOptions)[number])
-    ? requestedSort!
-    : "recent";
+    let initialData = emptyResponse;
+    let error: string | null = null;
 
-  // Pagination settings.
-  params.set("page", String(page));
-  params.set("limit", String(JOBS_PER_PAGE));
-  params.set("sort", sort);
+    try {
+        initialData = await getAllJobs(params);
+    } catch (err) {
+        console.error("Browse jobs fetch error:", err);
 
-  // Fetch initial jobs on the server.
-  const emptyResponse: JobsResponse = {
-    jobs: [],
-    totalJobs: 0,
-    currentPage: page,
-    totalPages: 0,
-  };
+        error =
+            err instanceof Error
+                ? err.message
+                : "Unable to fetch jobs.";
+    }
 
-  let initialData = emptyResponse;
-  let error: string | null = null;
-
-  try {
-    initialData = await getAllJobs(params);
-  } catch (err) {
-    console.error("Browse jobs fetch error:", err);
-
-    error =
-      err instanceof Error
-        ? err.message
-        : "Unable to fetch jobs.";
-  }
-
-  return (
-    <BrowseJobsClient
-      initialData={initialData}
-      initialError={error}
-    />
-  );
+    return (
+        <BrowseJobsClient
+  initialData={initialData}
+  initialError={error}
+  seekerId={seekerId}
+/>
+    );
 }

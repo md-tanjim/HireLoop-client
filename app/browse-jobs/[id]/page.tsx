@@ -30,6 +30,8 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { IJob } from "@/types/job";
+import ApplyNow from "@/app/components/application/ApplyNow";
+import { GetSessionServer } from "@/lib/api/getSession";
 
 
 // Convert newline-separated text into individual list items.
@@ -129,8 +131,12 @@ type DetailedJobProps = {
   params: Promise<{ id: string }>;
 };
 
+//main component
 const DetailedJob = async ({ params }: DetailedJobProps) => {
   const { id } = await params;
+
+
+  const session = await GetSessionServer();
 
   let jobData: IJob;
 
@@ -168,6 +174,22 @@ const DetailedJob = async ({ params }: DetailedJobProps) => {
     Number.isFinite(jobData.experience) && jobData.experience >= 0
       ? `${jobData.experience} ${jobData.experience === 1 ? "Year" : "Years"}`
       : "Not specified";
+
+
+
+
+      const handleApplication = ()=>{
+        const applicationData = {
+
+        }
+      }
+
+
+
+
+
+
+
 
   return (
     <main className="min-h-screen bg-[#08090d] px-4 py-8 text-white">
@@ -216,9 +238,14 @@ const DetailedJob = async ({ params }: DetailedJobProps) => {
               </div>
             </div>
 
-            <Button  variant="outline" className="shrink-0">
-              <Link href="/jobs">Browse Jobs</Link>
-            </Button>
+
+        {
+            (session?.user.accountType === "seeker")?
+                 <ApplyNow jobData={jobData}></ApplyNow>
+                 : ""
+        }
+
+
           </CardContent>
         </Card>
 

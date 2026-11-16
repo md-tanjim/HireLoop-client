@@ -1,8 +1,6 @@
-
 "use client";
 
 import { useEffect, useState, useTransition } from "react";
-
 import {
   usePathname,
   useRouter,
@@ -32,15 +30,19 @@ import type {
   JobSort,
   WorkMode,
   ExperienceRange,
+  IJob,
 } from "@/types/job";
+
 import JobSearch from "../components/jobs/JobSearch";
 import JobFilters from "../components/jobs/JobFilters";
 import JobCard from "../components/jobs/JobCard";
 import JobPagination from "../components/jobs/JobPagination";
+import { getSavedJobs } from "@/lib/api/savedJobs";
 
 type BrowseJobsClientProps = {
   initialData: JobsResponse;
   initialError: string | null;
+  seekerId: string | null;
 };
 
 const validSortOptions: JobSort[] = [
@@ -50,15 +52,15 @@ const validSortOptions: JobSort[] = [
   "salary-low",
 ];
 
-const initialFilters: BrowseFilters = {
-  jobTypes: [],
-  categories: [],
-  workModes: [],
-  experience: [],
-  location: "",
-};
+function getJobId(job: IJob): string {
+  return typeof job._id === "string" ? job._id : job._id.$oid;
+}
 
-export default function BrowseJobsClient({initialData,initialError}: BrowseJobsClientProps) {
+export default function BrowseJobsClient({
+  initialData,
+  initialError,
+  seekerId,
+}: BrowseJobsClientProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -71,7 +73,9 @@ export default function BrowseJobsClient({initialData,initialError}: BrowseJobsC
 
   const [showMobileFilters, setShowMobileFilters] = useState(false);
 
-  
+  // Store the IDs of jobs saved by the current seeker.
+  const [savedJobIds, setSavedJobIds] = useState<string[]>([]);
+
   // Read the current filters from the URL.
   const filters: BrowseFilters = {
     jobTypes: searchParams.getAll("jobType"),
@@ -80,13 +84,11 @@ export default function BrowseJobsClient({initialData,initialError}: BrowseJobsC
 
     workModes: [
       ...new Set(
-        searchParams
-          .getAll("isRemote")
-          .flatMap((value) => {
-            if (value === "true") return ["remote"];
-            if (value === "false") return ["onsite"];
-            return [];
-          })
+        searchParams.getAll("isRemote").flatMap((value) => {
+          if (value === "true") return ["remote"];
+          if (value === "false") return ["onsite"];
+          return [];
+        })
       ),
     ] as WorkMode[],
 
@@ -100,7 +102,6 @@ export default function BrowseJobsClient({initialData,initialError}: BrowseJobsC
   };
 
   const search = searchParams.get("search") ?? "";
-
   const currentSort = searchParams.get("sort");
 
   const sort: JobSort = validSortOptions.includes(
@@ -111,23 +112,57 @@ export default function BrowseJobsClient({initialData,initialError}: BrowseJobsC
 
   // Keep the input synchronized with browser navigation.
   useEffect(() => {
-    // eslint-disable-next-line
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setSearchInput(search);
   }, [search]);
 
+  // Fetch saved jobs for the logged-in seeker.
+  useEffect(() => {
+    if (!seekerId) {
+        // eslint-disable-next-line
+      setSavedJobIds([]);
+      return;
+    }
+
+    let cancelled = false;
+
+    const fetchSavedJobs = async () => {
+      try {
+        const result = await getSavedJobs(seekerId);
+
+        if (!cancelled) {
+          const jobs = Array.isArray(result.savedJobs)
+            ? result.savedJobs
+            : [];
+
+          const ids = jobs.map((job: IJob) => getJobId(job));
+          setSavedJobIds(ids);
+        }
+      } catch (error) {
+        if (!cancelled) {
+          console.error("Failed to fetch saved jobs:", error);
+        }
+      }
+    };
+
+    fetchSavedJobs();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [seekerId]);
+
   // Common URL navigation function.
-  const navigateWithParams = (params: URLSearchParams,resetPage = true) => {
+  const navigateWithParams = (
+    params: URLSearchParams,
+    resetPage = true
+  ) => {
     if (resetPage) {
       params.delete("page");
     }
-    // console.log("params==============", params);
 
     const queryString = params.toString();
-    // console.log("queryString==============", queryString);
-    // console.log("pathname==============",pathname );
-    const url = queryString
-      ? `${pathname}?${queryString}`
-      : pathname;
+    const url = queryString ? `${pathname}?${queryString}` : pathname;
 
     startTransition(() => {
       router.push(url, { scroll: false });
@@ -139,7 +174,6 @@ export default function BrowseJobsClient({initialData,initialError}: BrowseJobsC
     event.preventDefault();
 
     const params = new URLSearchParams(searchParams.toString());
-
     const keyword = searchInput.trim();
 
     if (keyword) {
@@ -153,7 +187,6 @@ export default function BrowseJobsClient({initialData,initialError}: BrowseJobsC
 
   // Update filters.
   const handleFiltersChange = (newFilters: BrowseFilters) => {
-    // console.log("newFilters==========",newFilters );
     const params = new URLSearchParams(searchParams.toString());
 
     // Remove the previous filter values.
@@ -229,34 +262,39 @@ export default function BrowseJobsClient({initialData,initialError}: BrowseJobsC
     ].forEach((key) => params.delete(key));
 
     setSearchInput("");
-
     navigateWithParams(params, false);
   };
 
   // Update sorting.
   const handleSortChange = (value: JobSort) => {
     const params = new URLSearchParams(searchParams.toString());
-
     params.set("sort", value);
-
     navigateWithParams(params);
   };
 
   // Update pagination.
   const handlePageChange = (page: number) => {
     const params = new URLSearchParams(searchParams.toString());
-
     params.set("page", String(page));
-
-    // console.log("-=-=-=======",params.toString());
-
     navigateWithParams(params, false);
+  };
+
+  // Update saved-job state when a job is saved or removed.
+  const handleSavedChange = (jobId: string, saved: boolean) => {
+    setSavedJobIds((currentIds) => {
+      if (saved) {
+        return currentIds.includes(jobId)
+          ? currentIds
+          : [...currentIds, jobId];
+      }
+
+      return currentIds.filter((id) => id !== jobId);
+    });
   };
 
   return (
     <main className="min-h-screen bg-[#08090d] px-4 py-8 text-white">
       <div className="mx-auto max-w-7xl space-y-6">
-
         {/* Search */}
         <JobSearch
           value={searchInput}
@@ -274,22 +312,16 @@ export default function BrowseJobsClient({initialData,initialError}: BrowseJobsC
             }
           >
             <SlidersHorizontal size={16} />
-
-            {showMobileFilters
-              ? "Hide Filters"
-              : "Show Filters"}
+            {showMobileFilters ? "Hide Filters" : "Show Filters"}
           </Button>
         </div>
 
         {/* Main layout */}
         <div className="grid grid-cols-1 items-start gap-5 lg:grid-cols-[240px_minmax(0,1fr)]">
-
           {/* Sidebar */}
           <aside
             className={
-              showMobileFilters
-                ? "block lg:block"
-                : "hidden lg:block"
+              showMobileFilters ? "block lg:block" : "hidden lg:block"
             }
           >
             <div className="lg:sticky lg:top-6">
@@ -303,10 +335,8 @@ export default function BrowseJobsClient({initialData,initialError}: BrowseJobsC
 
           {/* Results */}
           <section className="min-w-0 space-y-5">
-
             {/* Heading and sorting */}
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-
               <div>
                 <h1 className="text-xl font-semibold">
                   Found {initialData.totalJobs.toLocaleString()} Professional Jobs
@@ -333,21 +363,10 @@ export default function BrowseJobsClient({initialData,initialError}: BrowseJobsC
                   </SelectTrigger>
 
                   <SelectContent>
-                    <SelectItem value="recent">
-                      Most Recent
-                    </SelectItem>
-
-                    <SelectItem value="oldest">
-                      Oldest
-                    </SelectItem>
-
-                    <SelectItem value="salary-high">
-                      Highest Salary
-                    </SelectItem>
-
-                    <SelectItem value="salary-low">
-                      Lowest Salary
-                    </SelectItem>
+                    <SelectItem value="recent">Most Recent</SelectItem>
+                    <SelectItem value="oldest">Oldest</SelectItem>
+                    <SelectItem value="salary-high">Highest Salary</SelectItem>
+                    <SelectItem value="salary-low">Lowest Salary</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -363,7 +382,6 @@ export default function BrowseJobsClient({initialData,initialError}: BrowseJobsC
                   >
                     <CardContent className="flex gap-4 p-5">
                       <Skeleton className="h-12 w-12 shrink-0 rounded-lg bg-white/10" />
-
                       <div className="flex-1 space-y-3">
                         <Skeleton className="h-5 w-1/2 bg-white/10" />
                         <Skeleton className="h-4 w-1/3 bg-white/10" />
@@ -379,14 +397,10 @@ export default function BrowseJobsClient({initialData,initialError}: BrowseJobsC
             {!isPending && initialError && (
               <Card className="border-red-500/20 bg-[#121318]">
                 <CardContent className="flex flex-col items-center gap-3 p-8 text-center">
-                  <p className="font-medium">
-                    Unable to load jobs
-                  </p>
-
+                  <p className="font-medium">Unable to load jobs</p>
                   <p className="text-sm text-muted-foreground">
                     {initialError}
                   </p>
-
                   <Button
                     variant="outline"
                     onClick={() => router.refresh()}
@@ -402,12 +416,19 @@ export default function BrowseJobsClient({initialData,initialError}: BrowseJobsC
               !initialError &&
               initialData.jobs.length > 0 && (
                 <div className="space-y-3">
-                  {initialData.jobs.map((job) => (
-                    <JobCard 
-                    key={typeof job._id === "string" ? job._id : job._id.$oid}
-                    job={job}
-                    />
-                  ))}
+                  {initialData.jobs.map((job) => {
+                    const jobId = getJobId(job);
+
+                    return (
+                      <JobCard
+                        key={jobId}
+                        job={job}
+                        seekerId={seekerId}
+                        isSaved={savedJobIds.includes(jobId)}
+                        onSavedChange={handleSavedChange}
+                      />
+                    );
+                  })}
                 </div>
               )}
 
@@ -424,14 +445,11 @@ export default function BrowseJobsClient({initialData,initialError}: BrowseJobsC
                       />
                     </div>
 
-                    <h2 className="text-lg font-semibold">
-                      No Jobs Found
-                    </h2>
+                    <h2 className="text-lg font-semibold">No Jobs Found</h2>
 
                     <p className="max-w-sm text-sm text-muted-foreground">
-                      We couldnt find any jobs matching your
-                      search and filters. Try changing your
-                      search criteria.
+                      We couldnt find any jobs matching your search and filters.
+                      Try changing your search criteria.
                     </p>
 
                     <Button
@@ -454,7 +472,6 @@ export default function BrowseJobsClient({initialData,initialError}: BrowseJobsC
                   onPageChange={handlePageChange}
                 />
               )}
-
           </section>
         </div>
       </div>

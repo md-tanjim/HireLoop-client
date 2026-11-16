@@ -53,7 +53,7 @@ export function Navbar() {
   { href: "/browse-jobs", label: "Browse Jobs" },
   { href: "/company", label: "Company" },
   { href: "/pricing", label: "Pricing" },
-  { href: `/dashboard/${session?.user.role || "seeker"}`, label: "Dashboard" },
+  { href: `/dashboard/${session?.user.accountType || "seeker"}`, label: "Dashboard" },
 ];
 
 
@@ -120,6 +120,7 @@ if (pathname.startsWith("/dashboard")) {
   return null;
 }
 
+  //  console.log(session?.user, "navvvvvvvvvvvvvv")
 
 
 

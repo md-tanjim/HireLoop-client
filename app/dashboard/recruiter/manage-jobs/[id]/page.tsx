@@ -36,8 +36,8 @@ export default async function UpdateJobs({
     )}`);
   }
 
-  // Check recruiter role
-  if (session.user.role !== "recruiter") {
+  // Check recruiter accountType
+  if (session.user.accountType !== "recruiter") {
     redirect("/dashboard");
   }
 

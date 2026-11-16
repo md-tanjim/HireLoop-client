@@ -325,9 +325,20 @@ export default function ManageJobsCard({jobData,applicantCount}: ManageJobsCardP
 
       {/* Applicants - hardcoded for now */}
       <TableCell className="py-4">
-        <div className="flex min-w-[120px] items-center gap-1.5 whitespace-nowrap text-xs font-medium text-[#bcb6ff]">
+        <div className="flex flex-col min-w-[120px] items-center gap-1.5 whitespace-nowrap text-xs font-medium text-[#bcb6ff]">
           <Users className="size-5 shrink-0" />
           {applicantCount} Candidates
+
+          <Link 
+          href={`/dashboard/recruiter/candidates/${jobId}`}
+          className="inline-flex items-center justify-center rounded-md font-medium transition-colors h-8 gap-1.5 bg-[#5148bc]/25 px-3 text-xs text-[#bdb7ff] hover:bg-[#5148bc]/40 hover:text-white"
+          >
+            view Candidates
+          </Link>
+
+                
+
+
         </div>
       </TableCell>
 

@@ -1,0 +1,24 @@
+{
+    "invisifolder.hiddenFolders": [],
+    "files.exclude": {
+        "**/.git": true,
+        "**/.svn": true,
+        "**/.hg": true,
+        "**/.jj": true,
+        "**/.DS_Store": true,
+        "**/Thumbs.db": true,
+        "eslint.config.mjs": true,
+        "components.json": true,
+        "CLAUDE.md": true,
+        ".prettierrc": true,
+        ".prettierignore": true,
+        "components/.gitkeep": true,
+        "public/.gitkeep": true,
+        "node_modules": true,
+        "lib/utils.ts": true,
+        "lib/.gitkeep": true,
+        "AGENTS.md": true,
+        "next-env.d.ts": true,
+        "postcss.config.mjs": true
+    }
+}

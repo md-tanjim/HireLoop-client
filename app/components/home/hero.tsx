@@ -72,7 +72,7 @@ export function Hero() {
 
           <p className="mt-5 max-w-2xl text-sm leading-6 text-white/55 sm:text-base">
             HireLoop connects top talent with world-class companies. Browse
-            thousands of curated opportunities and land your next role — faster.
+            thousands of curated opportunities and land your next accountType — faster.
           </p>
 
           <form

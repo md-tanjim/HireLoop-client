@@ -142,7 +142,7 @@ export function DashboardSidebar() {
 
   const userName = session?.user.name || "User";
   const userImage = session?.user.image || null;
-  const userRole = session?.user.role;
+  const userRole = session?.user.accountType;
 
   const validRole: UserRole =
     userRole === "recruiter" ||
@@ -155,15 +155,15 @@ export function DashboardSidebar() {
   const roleInfo = {
   seeker: {
     title: "Seeker",
-    badge: "Professional Tier",
+    badge: session?.user.planId,
   },
   recruiter: {
     title: "Recruiter",
-    badge: "Premium account",
+    badge: session?.user.planId,
   },
   admin: {
     title: "Administrator",
-    badge: "Admin Console",
+    badge: session?.user.planId,
   },
 }[validRole];
 

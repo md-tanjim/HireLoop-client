@@ -79,8 +79,8 @@ const ManageJobs = async () => {
         redirect("/signin?callbackUrl=/dashboard/recruiter/manage-jobs");
     }
 
-    // Check recruiter role
-    if (session.user.role !== "recruiter") {
+    // Check recruiter accountType
+    if (session.user.accountType !== "recruiter") {
         redirect("/dashboard");
     }
 
@@ -326,7 +326,7 @@ const ManageJobs = async () => {
                                                         : jobData._id.$oid
                                                 }
                                                 jobData={jobData}
-                                                applicantCount={[34, 19, 12, 27, 8][index % 5]}
+                                                applicantCount={jobData.applicantCount}
                                             />
                                         ))
                                     )

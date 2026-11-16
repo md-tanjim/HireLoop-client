@@ -15,11 +15,13 @@ export default async function DashboardPage() {
     redirect("/signin?callbackUrl=/dashboard");
   }
 
-  // Get the user's role
-  const role = session.user.role;
+  // Get the user's accountType
+  const accountType = session.user.accountType;
 
-  // Redirect according to role
-  switch (role) {
+  console.log(session?.user)
+
+  // Redirect according to accountType
+  switch (accountType) {
     case "seeker":
       redirect("/dashboard/seeker");
 
